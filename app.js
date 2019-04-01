@@ -1,41 +1,61 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+'use strict';
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+// Dependencies
+const express = require('express');
+const bodyParser = require('body-parser');
+const app = express().use(bodyParser.json()); // TODO: Ch for URL encoded 
 
-var app = express();
+// Sets server port and logs message on success
+const port = process.env.PORT || 1337; 
+app.listen(port, () => console.log('webhook listening on port ' + port));
+// TODO: Change console.log for logger 
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+// TODO: Send this file to routes/webhook.js and export the Router
+app.post('/webhook', (req, res) => {  
+ 
+  let body = req.body;
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+  // Check event is from page subscription 
+  if (body.object === 'page') {
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+    body.entry.forEach(entry => {
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
+      // entry.messaging is an array, but will only ever contain one message 
+      let webhook_event = entry.messaging[0];
+      console.log(webhook_event);
+    });
+
+    res.status(200).send('EVENT_RECEIVED'); // TODO: Send after completing event
+  } else {
+    res.sendStatus(404);
+  }
+
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+app.get('/webhook', (req, res) => {
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+  // Your verify token. Should be a random string.
+  let VERIFY_TOKEN = "<YOUR_VERIFY_TOKEN>"
+    
+  // Parse the query params
+  let mode = req.query['hub.mode'];
+  let token = req.query['hub.verify_token'];
+  let challenge = req.query['hub.challenge'];
+    
+  // Checks if a token and mode is in the query string of the request
+  if (mode && token) {
+  
+    // Checks the mode and token sent is correct
+    if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+      
+      // Responds with the challenge token from the request
+      console.log('WEBHOOK_VERIFIED');
+      res.status(200).send(challenge);
+    
+    } else {
+      // Responds with '403 Forbidden' if verify tokens do not match
+      res.sendStatus(403);      
+    }
+  }
 });
 
-module.exports = app;
