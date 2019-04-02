@@ -1,14 +1,17 @@
 'use strict';
 
 // Dependencies
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser')
-;const app = express().use(bodyParser.json()); // TODO: Ch for URL encoded 
+;const app = express().use(bodyParser.url); // TODO: Ch for URL encoded 
 
-// Sets server port and logs message on success
 const port = process.env.PORT || 1337; 
 app.listen(port, () => console.log('webhook listening on port ' + port));
 // TODO: Change console.log for logger 
+
+let VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+console.log("verify_token: " + VERIFY_TOKEN)
 
 // TODO: Send this file to routes/webhook.js and export the Router
 app.post('/webhook', (req, res) => {  
@@ -34,7 +37,7 @@ app.post('/webhook', (req, res) => {
 
 app.get('/webhook', (req, res) => {
 
-  let VERIFY_TOKEN = "7wyCOR562iYF1GS3forB"
+  let VERIFY_TOKEN = process.env.VERIFY_TOKEN; // TODO: Set this var in Heroku
     
   // Parse the query params
   let mode = req.query['hub.mode'];
@@ -53,4 +56,7 @@ app.get('/webhook', (req, res) => {
     }
   }
 });
+
+// FB Page Token (Probably to be used by the Send API)
+// EAAEwkc2PbLgBAIQZAphsZAEUZCnyKVEySgC16DDVtyxeOPC550bq9yMJLW6qSs1uzryU8NeMZBrn1Sn1A6E2UZCDZB3CjzCc8sN52GZC1o5wGik6jfCown6LtccE9Ew8f6eC23bZCX3E2pu4s4EwF3MELnpoEZAZBi0ZAWr8Gnfw3FLywZDZD
 
