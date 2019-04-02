@@ -3,8 +3,8 @@
 // Dependencies
 require('dotenv').config();
 const express = require('express');
-const bodyParser = require('body-parser')
-;const app = express().use(bodyParser.url); // TODO: Ch for URL encoded 
+const bodyParser = require('body-parser');
+const app = express().use(bodyParser.json()); // TODO: Ch for URL encoded 
 
 const port = process.env.PORT || 1337; 
 app.listen(port, () => console.log('webhook listening on port ' + port));
