@@ -4,17 +4,25 @@ const request = require('request');
 const handleMessage = (sender_psid, received_message) => {
   let response;
 
+  console.log('Handling message');
   // Check if the message contains text
-  if (received_message.text) {    
+  if (received_message.text) {
+  	console.log('Received text message');
 
-    // Create the payload for a basic text message
-    response = {
-      "text": `You sent the message: "${received_message.text}". Now send me an image!`
-    }
-  }  
-  
-  // Sends the response message
-  callSendAPI(sender_psid, response);
+  	request('https://api.icndb.com/jokes/random', (err, res, body) => {  
+    	// TODO: Handle error
+    	console.log(body);
+
+    	response = {
+      		"text": `You sent the message: "${received_message.text}".
+      		Here's your prize: "${JSON.parse(body).value.joke}"`
+		}
+		console.log(response);
+  		callSendAPI(sender_psid, response);
+	});   
+  }
+
+  console.log('Handling message');    
 }
 
 // Handles messaging_postbacks events

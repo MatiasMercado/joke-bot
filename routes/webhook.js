@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const webhookService = require('../services/webhookService.js');
 
-router.post('/', (req, res) => {  
+router.post('/', (req, res) => {
  
   const body = req.body;
 
@@ -11,7 +11,7 @@ router.post('/', (req, res) => {
 
     body.entry.forEach(entry => {
 
-      // entry.messaging is an array, but will only ever contain one message 
+      // entry.messaging is an array, but will only ever contain one message
       const webhook_event = entry.messaging[0];
       console.log(webhook_event);
 
@@ -51,5 +51,3 @@ router.get('/', (req, res) => {
 });
 
 module.exports = router;
-
-
