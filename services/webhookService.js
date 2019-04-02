@@ -112,26 +112,27 @@ const sendRandomJoke = (psid) => {
 
 // TODO: Solve what happens if they call RESET before ever calling JOKE
 const resetJokesCount = (psid) => {
+	let response;
 	const userDetails = usersMap.get(psid);
-
+	
 	if (!userDetails || userDetails.jokesCount < MAX_JOKES 
 		|| !userDetails.timeOut) {
 		const limitNotReachedText = `It seems you still haven't reached your 
 		daily limit. Ask me for a joke!`;
-		const response = {
+		response = {
       			"text": limitNotReachedText
 		};
-		callSendAPI(psid, response);
 	}
 	else {
 		clearTimeout(userDetails.timeOut);
 		usersMap.set(psid, { jokesCount: 0 });
 		const resetSuccessText = `All clear. You can ask for ${MAX_JOKES} 
 		new jokes!.`;
-		const response = {
+		response = {
       			"text": resetSuccessText
 		};
 	}
+	callSendAPI(psid, response);
 }
 
 module.exports = {
