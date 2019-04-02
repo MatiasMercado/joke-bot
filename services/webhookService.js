@@ -21,11 +21,11 @@ const handleMessage = (sender_psid, received_message) => {
 			callSendAPI(sender_psid, response);
 			break;
 		case textCommands.JOKE:
-			sendRandomJoke();
+			sendRandomJoke(sender_psid);
 			break;
 		default:
 			response = {
-      			"text": `I didn't get that.`
+      			"text": `You are not as funny as I am.`
 			}
 			callSendAPI(sender_psid, response);
 			break;
@@ -63,7 +63,7 @@ const callSendAPI = (sender_psid, response) => {
   }); 
 }
 
-const sendRandomJoke = () => {
+const sendRandomJoke = (sender_psid) => {
 	request('https://api.icndb.com/jokes/random', (err, res, body) => {  
     	// TODO: Handle error
     	response = {
