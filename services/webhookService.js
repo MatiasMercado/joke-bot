@@ -106,7 +106,7 @@ const resetJokesCount = psid => {
 	
 	if (!userDetails || userDetails.jokesCount < MAX_JOKES 
 		|| !userDetails.timeOut) {
-		response = { "text": constants.LIMIT_NOT_REACHED };
+		response = { "text": constants.LIMIT_NOT_REACHED_TEXT };
 	}
 	else {
 		clearTimeout(userDetails.timeOut);
