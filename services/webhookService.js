@@ -1,10 +1,12 @@
 'use strict';
 
 const request = require('request');
-const constants = require('./constants.js');
+const strings = require('./strings.js');
 
 const MAX_JOKES = process.env.MAX_JOKES;
 const RESET_TIME = process.env.RESET_TIME;
+
+console.log(`MAX_JOKES: ${MAX_JOKES} and RESET_TIME: ${RESET_TIME}`);
 
 const textCommands = {
 	JOKE: 'JOKE',
@@ -24,14 +26,14 @@ const handleMessage = (psid, received_message) => {
 			resetJokesCount(psid);
 			break;
 		case textCommands.HELP:
-			response = { "text": constants.HELP_TEXT };
+			response = { "text": strings.HELP_TEXT };
 			callSendAPI(psid, response);
 			break;
 		case textCommands.JOKE:
 			sendRandomJoke(psid);
 			break;
 		default:
-			response = { "text": constants.DEFAULT_TEXT };
+			response = { "text": strings.DEFAULT_TEXT };
 			callSendAPI(psid, response);
 			break;
   	}
@@ -78,7 +80,7 @@ const sendRandomJoke = psid => {
 	if (jokesCount >= MAX_JOKES) {
 		// TODO: Add "You can get more in Date() - fromDate."
 		const response = {
-      			"text": constants.LIMIT_REACHED_TEXT
+      			"text": strings.LIMIT_REACHED_TEXT
 		};
 		callSendAPI(psid, response);
 	} else {
@@ -89,7 +91,7 @@ const sendRandomJoke = psid => {
 			// Increase the jokes count for the sender
 			if (jokesCount + 1 == MAX_JOKES) {
 				const timeOut = setTimeout(() => resetJokesCount(psid), 
-					constants.RESET_TIME);
+					RESET_TIME);
 				usersMap.set(psid, { jokesCount: jokesCount + 1, timeOut });
 			} else {
 				usersMap.set(psid, { jokesCount: jokesCount + 1 });
@@ -106,12 +108,12 @@ const resetJokesCount = psid => {
 	
 	if (!userDetails || userDetails.jokesCount < MAX_JOKES 
 		|| !userDetails.timeOut) {
-		response = { "text": constants.LIMIT_NOT_REACHED_TEXT };
+		response = { "text": strings.LIMIT_NOT_REACHED_TEXT };
 	}
 	else {
 		clearTimeout(userDetails.timeOut);
 		usersMap.set(psid, { jokesCount: 0 });
-		response = { "text": constants.RESET_SUCCESS_TEXT };
+		response = { "text": strings.RESET_SUCCESS_TEXT };
 	}
 	callSendAPI(psid, response);
 }
