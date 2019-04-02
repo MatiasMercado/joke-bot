@@ -1,6 +1,5 @@
 const MAX_JOKES = process.env.MAX_JOKES;
 const RESET_TIME = process.env.RESET_TIME;
-// const RESET_TIME = 1000 * 60 * 60 * 24; // 86400000 ms
 
 module.exports = Object.freeze({
 	HELP_TEXT: `Send "joke" to get amazing Chuck Norris facts! \

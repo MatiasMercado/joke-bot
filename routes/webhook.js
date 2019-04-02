@@ -27,8 +27,6 @@ router.post('/', (req, res) => {
       }
     });
 
-    // What's the convention with this response? Should it I wait for the 
-    // handlers to finish or is it enough with receiving the event?
     res.status(200).send('EVENT_RECEIVED');
 } else {
     res.sendStatus(404);
