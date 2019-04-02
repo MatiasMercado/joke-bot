@@ -6,65 +6,64 @@ const strings = require('./strings.js');
 const MAX_JOKES = process.env.MAX_JOKES;
 const RESET_TIME = process.env.RESET_TIME;
 
-console.log(`MAX_JOKES: ${MAX_JOKES} and RESET_TIME: ${RESET_TIME}`);
-
 const textCommands = {
 	JOKE: 'JOKE',
 	RESET: 'RESET',
 	HELP: 'HELP' 
 }
 
-// <psid, { jokesCount: 0, timeout: XXX, fromDate: }>
 let usersMap = new Map();
 
 const handleMessage = (psid, received_message) => {
-  let response;
+	let response;
 
-  if (received_message.text) {
-  	switch(received_message.text.toUpperCase()) {
-		case textCommands.RESET:
-			resetJokesCount(psid);
+	if (received_message.text) {
+		switch(received_message.text.toUpperCase()) {
+			case textCommands.RESET:
+				resetJokesCount(psid);
+				break;
+			case textCommands.HELP:
+				response = { "text": strings.HELP_TEXT };
+				callSendAPI(psid, response);
 			break;
-		case textCommands.HELP:
-			response = { "text": strings.HELP_TEXT };
-			callSendAPI(psid, response);
-			break;
-		case textCommands.JOKE:
-			sendRandomJoke(psid);
-			break;
-		default:
-			response = { "text": strings.DEFAULT_TEXT };
-			callSendAPI(psid, response);
-			break;
-  	}
-  }
+			case textCommands.JOKE:
+				sendRandomJoke(psid);
+				break;
+			default:
+				sendJokesButton(psid);
+				break;
+		}
+	}
 }
 
-// Handles messaging_postbacks events
 const handlePostback = (psid, received_postback) => {
+	const payload = received_postback.payload;
 
+	if (payload.toUpperCase() === 'JOKE') {
+		sendRandomJoke(psid);
+	}
 }
 
 const callSendAPI = (psid, response) => {
-  const request_body = {
-    "recipient": {
-      "id": psid
-    },
-    "message": response
-  };
+	const request_body = {
+		"recipient": {
+			"id": psid
+		},
+		"message": response
+	};
 
-  request({
-    "uri": process.env.FACEBOOK_API_URI,
-    "qs": { "access_token": process.env.PAGE_ACCESS_TOKEN },
-    "method": "POST",
-    "json": request_body
-  }, (err, res, body) => {
-    if (!err) {
-      console.log('Message sent!')
-    } else {
-      console.error('Unable to send message: ' + err);
-    }
-  }); 
+	request({
+		"uri": process.env.FACEBOOK_API_URI,
+		"qs": { "access_token": process.env.PAGE_ACCESS_TOKEN },
+		"method": "POST",
+		"json": request_body
+	}, (err, res, body) => {
+		if (!err) {
+			console.log('Message sent!')
+		} else {
+			console.error('Unable to send message: ' + err);
+		}
+	}); 
 }
 
 const sendRandomJoke = psid => {
@@ -78,14 +77,13 @@ const sendRandomJoke = psid => {
 	}
 
 	if (jokesCount >= MAX_JOKES) {
-		// TODO: Add "You can get more in Date() - fromDate."
 		const response = {
-      			"text": strings.LIMIT_REACHED_TEXT
+			"text": strings.LIMIT_REACHED_TEXT
 		};
 		callSendAPI(psid, response);
 	} else {
 		request(process.env.ICNDB_API_URI + '/jokes/random?escape=javascript',
-		 (err, res, body) => {  
+			(err, res, body) => {  
 	    	// TODO: Handle error
 	    	const response = { "text": `${JSON.parse(body).value.joke}` };
 
@@ -98,7 +96,7 @@ const sendRandomJoke = psid => {
 				usersMap.set(psid, { jokesCount: jokesCount + 1 });
 			}
 			
-	  		callSendAPI(psid, response);
+			callSendAPI(psid, response);
 		}); 
 	}
 }
@@ -110,8 +108,7 @@ const resetJokesCount = psid => {
 	if (!userDetails || userDetails.jokesCount < MAX_JOKES 
 		|| !userDetails.timeOut) {
 		response = { "text": strings.LIMIT_NOT_REACHED_TEXT };
-	}
-	else {
+	} else {
 		clearTimeout(userDetails.timeOut);
 		usersMap.set(psid, { jokesCount: 0 });
 		response = { "text": strings.RESET_SUCCESS_TEXT };
@@ -119,7 +116,27 @@ const resetJokesCount = psid => {
 	callSendAPI(psid, response);
 }
 
+const sendJokesButton = psid => {
+	const response = {
+		"attachment": {
+			"type": "template",
+			"payload": {
+				"template_type": "button",
+				"text": strings.DEFAULT_TEXT,
+				"buttons": [
+				{
+					"type": "postback",
+					"title": "Joke",
+					"payload": "JOKE",
+				}]
+			}
+		}
+	};
+ 	callSendAPI(psid, response);
+};
+
+
 module.exports = {
-    handleMessage, 
-    handlePostback
+	handleMessage, 
+	handlePostback
 };
