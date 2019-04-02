@@ -52,7 +52,7 @@ const callSendAPI = (psid, response) => {
   };
 
   request({
-    "uri": process.env.API_URI,
+    "uri": process.env.FACEBOOK_API_URI,
     "qs": { "access_token": process.env.PAGE_ACCESS_TOKEN },
     "method": "POST",
     "json": request_body
@@ -82,7 +82,7 @@ const sendRandomJoke = psid => {
 		};
 		callSendAPI(psid, response);
 	} else {
-		request(process.env.ICNDB + '/jokes/random', (err, res, body) => {  
+		request(process.env.ICNDB_API_URI + '/jokes/random', (err, res, body) => {  
 	    	// TODO: Handle error
 	    	const response = { "text": `${JSON.parse(body).value.joke}` };
 	    	
