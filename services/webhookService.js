@@ -1,6 +1,10 @@
 'use strict';
 
 const request = require('request');
+const constants = require('./constants.js');
+
+const MAX_JOKES = constants.MAX_JOKES;
+const RESET_TIME = constants.RESET_TIME;
 
 const textCommands = {
 	JOKE: 'JOKE',
@@ -8,13 +12,9 @@ const textCommands = {
 	HELP: 'HELP' 
 }
 
-const MAX_JOKES = 3;
-const RESET_TIME = 1000 * 60 * 60 * 24;
-
 // <psid, { jokesCount: 0, timeout: XXX, fromDate: }>
 let usersMap = new Map();
 
-// Handles messages events
 const handleMessage = (psid, received_message) => {
   let response;
 
@@ -24,21 +24,14 @@ const handleMessage = (psid, received_message) => {
 			resetJokesCount(psid);
 			break;
 		case textCommands.HELP:
-			const helpText = `Send "joke" to get amazing Chuck Norris facts!
-      			Reached your limit already? Send "reset" to get 
-      			a new daily dose!.`; 
-			response = {
-      			"text": helpText
-			};
+			response = { "text": constants.HELP_TEXT };
 			callSendAPI(psid, response);
 			break;
 		case textCommands.JOKE:
 			sendRandomJoke(psid);
 			break;
 		default:
-			response = {
-      			"text": `Sorry, I didn't get that.`
-			};
+			response = { "text": constants.DEFAULT_TEXT };
 			callSendAPI(psid, response);
 			break;
   	}
@@ -59,7 +52,7 @@ const callSendAPI = (psid, response) => {
   };
 
   request({
-    "uri": "https://graph.facebook.com/v2.6/me/messages",
+    "uri": process.env.API_URI,
     "qs": { "access_token": process.env.PAGE_ACCESS_TOKEN },
     "method": "POST",
     "json": request_body
@@ -72,8 +65,9 @@ const callSendAPI = (psid, response) => {
   }); 
 }
 
-const sendRandomJoke = (psid) => {
+const sendRandomJoke = psid => {
 	let jokesCount;
+
 	if (usersMap.has(psid)) {
 		jokesCount = usersMap.get(psid).jokesCount;	
 	} else {
@@ -83,54 +77,41 @@ const sendRandomJoke = (psid) => {
 
 	if (jokesCount >= MAX_JOKES) {
 		// TODO: Add "You can get more in Date() - fromDate."
-		const maxLimitText = `Oops. You've reached your daily limit 
-		of ${MAX_JOKES} jokes. Need more? Send "reset" and 
-		get a new daily dose!`;
 		const response = {
-      			"text": maxLimitText
+      			"text": constants.LIMIT_REACHED_TEXT
 		};
 		callSendAPI(psid, response);
 	} else {
-		request('https://api.icndb.com/jokes/random', (err, res, body) => {  
-    	// TODO: Handle error
-    	const response = {
-      		"text": `${JSON.parse(body).value.joke}`
-		};
-
-		// Increase the jokes count for the sender
-		if (jokesCount + 1 == MAX_JOKES) {
-			const timeOut = setTimeout(() => resetJokesCount(psid), RESET_TIME);
-			usersMap.set(psid, { jokesCount: jokesCount + 1, timeOut });
-		} else {
-			usersMap.set(psid, { jokesCount: jokesCount + 1 });
-		}
-
-  		callSendAPI(psid, response);
-	}); 
+		request(process.env.ICNDB + '/jokes/random', (err, res, body) => {  
+	    	// TODO: Handle error
+	    	const response = { "text": `${JSON.parse(body).value.joke}` };
+	    	
+			// Increase the jokes count for the sender
+			if (jokesCount + 1 == MAX_JOKES) {
+				const timeOut = setTimeout(() => resetJokesCount(psid), 
+					constants.RESET_TIME);
+				usersMap.set(psid, { jokesCount: jokesCount + 1, timeOut });
+			} else {
+				usersMap.set(psid, { jokesCount: jokesCount + 1 });
+			}
+			
+	  		callSendAPI(psid, response);
+		}); 
 	}
 }
 
-// TODO: Solve what happens if they call RESET before ever calling JOKE
-const resetJokesCount = (psid) => {
+const resetJokesCount = psid => {
 	let response;
 	const userDetails = usersMap.get(psid);
 	
 	if (!userDetails || userDetails.jokesCount < MAX_JOKES 
 		|| !userDetails.timeOut) {
-		const limitNotReachedText = `It seems you still haven't reached your 
-		daily limit. Ask me for a joke!`;
-		response = {
-      			"text": limitNotReachedText
-		};
+		response = { "text": constants.LIMIT_NOT_REACHED };
 	}
 	else {
 		clearTimeout(userDetails.timeOut);
 		usersMap.set(psid, { jokesCount: 0 });
-		const resetSuccessText = `All clear. You can ask for ${MAX_JOKES} 
-		new jokes!.`;
-		response = {
-      			"text": resetSuccessText
-		};
+		response = { "text": constants.RESET_SUCCESS_TEXT };
 	}
 	callSendAPI(psid, response);
 }
