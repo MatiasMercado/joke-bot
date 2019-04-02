@@ -8,7 +8,7 @@ const textCommands = {
 	HELP: 'HELP' 
 }
 
-const MAX_JOKES = 4;
+const MAX_JOKES = 3;
 const RESET_TIME = 1000 * 60 * 60 * 24;
 
 // <psid, { jokesCount: 0, timeout: XXX, fromDate: }>
@@ -99,7 +99,7 @@ const sendRandomJoke = (psid) => {
 
 		// Increase the jokes count for the sender
 		if (jokesCount + 1 == MAX_JOKES) {
-			const timeOut = setTimeout(RESET_TIME, () => resetJokesCount(psid));
+			const timeOut = setTimeout(() => resetJokesCount(psid), RESET_TIME);
 			usersMap.set(psid, { jokesCount: jokesCount + 1, timeOut });
 		} else {
 			usersMap.set(psid, { jokesCount: jokesCount + 1 });
