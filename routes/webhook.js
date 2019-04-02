@@ -1,3 +1,5 @@
+'use strict';
+
 const express = require('express');
 const router = express.Router();
 const webhookService = require('../services/webhookService.js');
@@ -12,19 +14,21 @@ router.post('/', (req, res) => {
     body.entry.forEach(entry => {
 
       // entry.messaging is an array, but will only ever contain one message
-      const webhook_event = entry.messaging[0];
-      console.log(webhook_event);
+      const webhookEvent = entry.messaging[0];
+      console.log(webhookEvent);
 
-      const sender_psid = webhook_event.sender.id;
-      console.log('Sender PSID: ' + sender_psid);
+      const psid = webhookEvent.sender.id;
+      console.log('Sender PSID: ' + psid);
 
-      if (webhook_event.message) {
-        webhookService.handleMessage(sender_psid, webhook_event.message);        
-      } else if (webhook_event.postback) {
-        webhookService.handlePostback(sender_psid, webhook_event.postback);
+      if (webhookEvent.message) {
+        webhookService.handleMessage(psid, webhookEvent.message);        
+      } else if (webhookEvent.postback) {
+        webhookService.handlePostback(psid, webhookEvent.postback);
       }
     });
 
+    // What's the convention with this response? Should it I wait for the 
+    // handlers to finish or is it enough with receiving the event?
     res.status(200).send('EVENT_RECEIVED');
 } else {
     res.sendStatus(404);

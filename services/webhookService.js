@@ -1,3 +1,5 @@
+'use strict';
+
 const request = require('request');
 
 const textCommands = {
@@ -6,49 +8,56 @@ const textCommands = {
 	HELP: 'HELP' 
 }
 
+const MAX_JOKES = 4;
+const RESET_TIME = 1000 * 60 * 60 * 24;
+
+// <psid, { jokesCount: 0, timeout: XXX, fromDate: }>
+let usersMap = new Map();
+
 // Handles messages events
-const handleMessage = (sender_psid, received_message) => {
+const handleMessage = (psid, received_message) => {
   let response;
 
   if (received_message.text) {
   	switch(received_message.text.toUpperCase()) {
 		case textCommands.RESET:
+			resetJokesCount(psid);
 			break;
 		case textCommands.HELP:
+			const helpText = `Send "joke" to get amazing Chuck Norris facts!
+      			Reached your limit already? Send "reset" to get 
+      			a new daily dose!.`; 
 			response = {
-      			"text": `This is your help text!`
-			}
-			callSendAPI(sender_psid, response);
+      			"text": helpText
+			};
+			callSendAPI(psid, response);
 			break;
 		case textCommands.JOKE:
-			sendRandomJoke(sender_psid);
+			sendRandomJoke(psid);
 			break;
 		default:
 			response = {
-      			"text": `You are not as funny as I am.`
-			}
-			callSendAPI(sender_psid, response);
+      			"text": `Sorry, I didn't get that.`
+			};
+			callSendAPI(psid, response);
 			break;
   	}
   }
 }
 
 // Handles messaging_postbacks events
-const handlePostback = (sender_psid, received_postback) => {
+const handlePostback = (psid, received_postback) => {
 
 }
 
-// Sends response messages via the Send API
-const callSendAPI = (sender_psid, response) => {
-   // Construct the message body
+const callSendAPI = (psid, response) => {
   const request_body = {
     "recipient": {
-      "id": sender_psid
+      "id": psid
     },
     "message": response
-  }
+  };
 
-    // Send the HTTP request to the Messenger Platform
   request({
     "uri": "https://graph.facebook.com/v2.6/me/messages",
     "qs": { "access_token": process.env.PAGE_ACCESS_TOKEN },
@@ -58,19 +67,71 @@ const callSendAPI = (sender_psid, response) => {
     if (!err) {
       console.log('Message sent!')
     } else {
-      console.error("Unable to send message: " + err);
+      console.error('Unable to send message: ' + err);
     }
   }); 
 }
 
-const sendRandomJoke = (sender_psid) => {
-	request('https://api.icndb.com/jokes/random', (err, res, body) => {  
+const sendRandomJoke = (psid) => {
+	let jokesCount;
+	if (usersMap.has(psid)) {
+		jokesCount = usersMap.get(psid).jokesCount;	
+	} else {
+		jokesCount = 0;
+		usersMap.set(psid, { jokesCount: 0 });
+	}
+
+	if (jokesCount >= MAX_JOKES) {
+		// TODO: Add "You can get more in Date() - fromDate."
+		const maxLimitText = `Oops. You've reached your daily limit 
+		of ${MAX_JOKES} jokes. Need more? Send "reset" and 
+		get a new daily dose!`;
+		const response = {
+      			"text": maxLimitText
+		};
+		callSendAPI(psid, response);
+	} else {
+		request('https://api.icndb.com/jokes/random', (err, res, body) => {  
     	// TODO: Handle error
-    	response = {
+    	const response = {
       		"text": `${JSON.parse(body).value.joke}`
+		};
+
+		// Increase the jokes count for the sender
+		if (jokesCount + 1 == MAX_JOKES) {
+			const timeOut = setTimeout(RESET_TIME, () => resetJokesCount(psid));
+			usersMap.set(psid, { jokesCount: jokesCount + 1, timeOut });
+		} else {
+			usersMap.set(psid, { jokesCount: jokesCount + 1 });
 		}
-  		callSendAPI(sender_psid, response);
-	});   
+
+  		callSendAPI(psid, response);
+	}); 
+	}
+}
+
+// TODO: Solve what happens if they call RESET before ever calling JOKE
+const resetJokesCount = (psid) => {
+	const userDetails = usersMap.get(psid);
+
+	if (!userDetails || userDetails.jokesCount < MAX_JOKES 
+		|| !userDetails.timeOut) {
+		const limitNotReachedText = `It seems you still haven't reached your 
+		daily limit. Ask me for a joke!`;
+		const response = {
+      			"text": limitNotReachedText
+		};
+		callSendAPI(psid, response);
+	}
+	else {
+		clearTimeout(userDetails.timeOut);
+		usersMap.set(psid, { jokesCount: 0 });
+		const resetSuccessText = `All clear. You can ask for ${MAX_JOKES} 
+		new jokes!.`;
+		const response = {
+      			"text": resetSuccessText
+		};
+	}
 }
 
 module.exports = {
