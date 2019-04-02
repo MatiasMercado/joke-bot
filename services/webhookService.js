@@ -1,28 +1,36 @@
 const request = require('request');
 
+const textCommands = {
+	JOKE: 'JOKE',
+	RESET: 'RESET',
+	HELP: 'HELP' 
+}
+
 // Handles messages events
 const handleMessage = (sender_psid, received_message) => {
   let response;
 
-  console.log('Handling message');
-  // Check if the message contains text
   if (received_message.text) {
-  	console.log('Received text message');
-
-  	request('https://api.icndb.com/jokes/random', (err, res, body) => {  
-    	// TODO: Handle error
-    	console.log(body);
-
-    	response = {
-      		"text": `You sent the message: "${received_message.text}".
-      		Here's your prize: "${JSON.parse(body).value.joke}"`
-		}
-		console.log(response);
-  		callSendAPI(sender_psid, response);
-	});   
+  	switch(received_message.text.toUpperCase()) {
+		case textCommands.RESET:
+			break;
+		case textCommands.HELP:
+			response = {
+      			"text": `This is your help text!`
+			}
+			callSendAPI(sender_psid, response);
+			break;
+		case textCommands.JOKE:
+			sendRandomJoke();
+			break;
+		default:
+			response = {
+      			"text": `I didn't get that.`
+			}
+			callSendAPI(sender_psid, response);
+			break;
+  	}
   }
-
-  console.log('Handling message');    
 }
 
 // Handles messaging_postbacks events
@@ -53,6 +61,16 @@ const callSendAPI = (sender_psid, response) => {
       console.error("Unable to send message: " + err);
     }
   }); 
+}
+
+const sendRandomJoke = () => {
+	request('https://api.icndb.com/jokes/random', (err, res, body) => {  
+    	// TODO: Handle error
+    	response = {
+      		"text": `${JSON.parse(body).value.joke}`
+		}
+  		callSendAPI(sender_psid, response);
+	});   
 }
 
 module.exports = {
