@@ -3,8 +3,8 @@
 const request = require('request');
 const constants = require('./constants.js');
 
-const MAX_JOKES = constants.MAX_JOKES;
-const RESET_TIME = constants.RESET_TIME;
+const MAX_JOKES = process.env.MAX_JOKES;
+const RESET_TIME = process.env.RESET_TIME;
 
 const textCommands = {
 	JOKE: 'JOKE',
@@ -85,7 +85,7 @@ const sendRandomJoke = psid => {
 		request(process.env.ICNDB_API_URI + '/jokes/random', (err, res, body) => {  
 	    	// TODO: Handle error
 	    	const response = { "text": `${JSON.parse(body).value.joke}` };
-	    	
+
 			// Increase the jokes count for the sender
 			if (jokesCount + 1 == MAX_JOKES) {
 				const timeOut = setTimeout(() => resetJokesCount(psid), 
