@@ -84,7 +84,8 @@ const sendRandomJoke = psid => {
 		};
 		callSendAPI(psid, response);
 	} else {
-		request(process.env.ICNDB_API_URI + '/jokes/random', (err, res, body) => {  
+		request(process.env.ICNDB_API_URI + '/jokes/random?escape=javascript',
+		 (err, res, body) => {  
 	    	// TODO: Handle error
 	    	const response = { "text": `${JSON.parse(body).value.joke}` };
 
