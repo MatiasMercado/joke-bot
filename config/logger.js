@@ -6,7 +6,7 @@ let logger;
 
 // Can't use fs logs since heroku provides a read-only fs
 if (process.env.HEROKU_DEPLOY === 'true') {
-  const logger = createLogger({
+  logger = createLogger({
     level: 'info',
     format: format.combine(
       format.timestamp({
@@ -32,7 +32,7 @@ if (process.env.HEROKU_DEPLOY === 'true') {
    fs.mkdirSync(logDir);
   }
 
-  const logger = createLogger({
+  logger = createLogger({
     level: 'info',
     format: format.combine(
       format.timestamp({

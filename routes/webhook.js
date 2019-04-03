@@ -2,7 +2,10 @@
 
 const express = require('express');
 const router = express.Router();
-const webhookService = require('../services/webhookService.js');
+const WebhookService = require('../services/webhookService');
+const logger = require('../config/logger');
+
+const webhook = new WebhookService();
 
 router.post('/', (req, res) => {
 
@@ -18,9 +21,11 @@ router.post('/', (req, res) => {
       const psid = webhookEvent.sender.id;
 
       if (webhookEvent.message) {
-        webhookService.handleMessage(psid, webhookEvent.message);        
+        webhook.handleMessage(psid, webhookEvent.message)
+        .catch(err => logger.error(err))
       } else if (webhookEvent.postback) {
-        webhookService.handlePostback(psid, webhookEvent.postback);
+        webhook.handlePostback(psid, webhookEvent.postback)
+        .catch(err => logger.error(err))
       }
     });
 

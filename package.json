@@ -3,15 +3,18 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./app.js"
+    "start": "node ./app.js",
+    "test": "mocha"
   },
   "dependencies": {
+    "chai": "^4.2.0",
+    "chai-spies": "^1.0.0",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
     "dotenv": "^7.0.0",
     "express": "~4.16.0",
     "http-errors": "~1.6.2",
-    "jade": "~1.11.0",
+    "mocha": "^6.0.2",
     "morgan": "~1.9.0",
     "request": "^2.88.0",
     "winston": "^3.2.1"

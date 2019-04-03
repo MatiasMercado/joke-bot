@@ -5,6 +5,7 @@ module.exports = Object.freeze({
 	START_TEXT: `Welcome to JokeBot! Send "joke" to get amazing Chuck Norris facts! \
 You can ask for ${MAX_JOKES} jokes a day. Remember you can send "help" \
 if you get stuck!`,
+	JOKE_BUTTON_TITLE: `Joke`,
 	HELP_TEXT: `Send "joke" to get amazing Chuck Norris facts! \
 Reached your limit already? Send "reset" to get a new daily dose!.`,
 	DEFAULT_TEXT: `Press the button to get a joke! Send "help" if you get stuck.`,
