@@ -43,7 +43,7 @@ const handlePostback = (psid, received_postback) => {
 	const payload = received_postback.payload;
 
 	if (payload.toUpperCase() === 'START') {
-		response = { 
+		const response = { 
 			"text": strings.START_TEXT, 
 			"quick_replies": buildQuickReply("Joke")
 		};
