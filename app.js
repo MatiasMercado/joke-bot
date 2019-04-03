@@ -3,10 +3,12 @@
 // Load dependencies
 require('dotenv').config();
 const express = require('express');
+const logger = require('morgan');
 const bodyParser = require('body-parser');
 const webhookRouter = require('./routes/webhook');
 
 const app = express();
+app.use(logger('dev')); // TODO: Leave empty to output 'default' format
 app.use(bodyParser.json()); // TODO: Ch for URL encoded 
 app.use('/webhook', webhookRouter);
 

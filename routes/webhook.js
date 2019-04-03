@@ -15,10 +15,7 @@ router.post('/', (req, res) => {
 
       // entry.messaging is an array, but will only ever contain one message
       const webhookEvent = entry.messaging[0];
-      console.log(webhookEvent);
-
       const psid = webhookEvent.sender.id;
-      console.log('Sender PSID: ' + psid);
 
       if (webhookEvent.message) {
         webhookService.handleMessage(psid, webhookEvent.message);        
@@ -40,12 +37,8 @@ router.get('/', (req, res) => {
   const challenge = req.query['hub.challenge'];
     
   if (mode && token) {
-  
     if (mode === 'subscribe' && token === process.env.VERIFY_TOKEN) {
-      
-      console.log('WEBHOOK_VERIFIED');
       res.status(200).send(challenge);
-    
     } else {
       res.sendStatus(403);      
     }
