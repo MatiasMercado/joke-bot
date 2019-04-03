@@ -11,4 +11,12 @@
 
 // Test 3: Get more than 10 jokes
 
+// Test 1
+// Exepct webhookService.handleMessage(ID, {Joke}) to call ICNDB API with XX ?
+// Expect third call to not call API?
 
+// Call a Reset
+// Expect I get joke again
+
+// Test 2
+// Expect webhookService.handlePostback(ID, {Joke}) to return joke (Meaning call FB API)
