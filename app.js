@@ -9,7 +9,7 @@ const webhookRouter = require('./routes/webhook');
 
 const app = express();
 app.use(logger()); // TODO: Leave empty to output 'default' format
-app.use(bodyParser.json()); // TODO: Ch for URL encoded 
+app.use(bodyParser.json('combined')); // TODO: Ch for URL encoded 
 app.use('/webhook', webhookRouter);
 
 // Start app
