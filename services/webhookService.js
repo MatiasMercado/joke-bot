@@ -65,10 +65,8 @@ const callSendAPI = (psid, response) => {
 		"method": "POST",
 		"json": request_body
 	}, (err, res, body) => {
-		if (!err) {
-			console.log('Message sent!')
-		} else {
-			console.error('Unable to send message: ' + err);
+		if (err) {
+			console.error('Unable to reach facebook API: ' + err);
 		}
 	}); 
 }
@@ -90,11 +88,26 @@ const sendRandomJoke = psid => {
 		};
 		callSendAPI(psid, response);
 	} else {
-		request(process.env.ICNDB_API_URI + '/jokes/random?escape=javascript',
+		request(process.env.ICNDB_API_URI + '/jokes/random?escape=javascript', 
 			(err, res, body) => {  
-	    	// TODO: Handle error
+			
+			let text;
+
+	    	// Handle error on API call
+	    	if (err) {
+	    		text = strings.ICNDB_NOT_REACHED;
+	    		console.error('Unable to reach ICNDB: ' + err);
+	    	} else {
+	    		try {
+	    			text = `${JSON.parse(body).value.joke}`;
+	    		} catch {
+	    			text = strings.ICNDB_NOT_REACHED;
+	    			console.error('Error parsing ICNDB response ' + body);
+	    		}	
+	    	}
+
 	    	const response = { 
-	    		"text": `${JSON.parse(body).value.joke}`, 
+	    		"text": text, 
 	    		"quick_replies": buildQuickReply("Joke")
 	    	};
 

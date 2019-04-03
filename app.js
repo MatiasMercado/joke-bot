@@ -8,10 +8,10 @@ const bodyParser = require('body-parser');
 const webhookRouter = require('./routes/webhook');
 
 const app = express();
-app.use(logger()); // TODO: Leave empty to output 'default' format
-app.use(bodyParser.json('combined')); // TODO: Ch for URL encoded 
+app.use(logger('combined'));
+app.use(bodyParser.json());
 app.use('/webhook', webhookRouter);
 
 // Start app
 const port = process.env.PORT || 8080; 
-app.listen(port, () => console.log('webhook listening on port ' + port));
+app.listen(port);

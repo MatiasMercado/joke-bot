@@ -14,6 +14,7 @@ get a new daily dose!`,
 	LIMIT_NOT_REACHED_TEXT: `It seems you still haven't reached your \
 daily limit. Ask me for a joke!`, 
 	RESET_SUCCESS_TEXT: `All clear. You can ask for ${MAX_JOKES} \
-new jokes!`, 
+new jokes!`,
+	ICNDB_NOT_REACHED: `We're sorry, it seems there was an error getting your jokes.`,
 	UNKNOWN_TEXT: `Sorry, I didn't get that.`
 });
