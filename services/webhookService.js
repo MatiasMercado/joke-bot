@@ -42,8 +42,12 @@ const handleMessage = (psid, received_message) => {
 const handlePostback = (psid, received_postback) => {
 	const payload = received_postback.payload;
 
-	if (payload.toUpperCase() === 'GET STARTED') {
-		sendDefaultAnswer(psid);
+	if (payload.toUpperCase() === 'START') {
+		response = { 
+			"text": strings.START_TEXT, 
+			"quick_replies": buildQuickReply("Joke")
+		};
+		callSendAPI(psid, response);
 	}
 }
 
@@ -142,25 +146,6 @@ const sendDefaultAnswer = psid => {
 	}
 	callSendAPI(psid, response);
 }
-
-const sendPostbackButton = (psid, text, title) => {
-	const response = {
-		"attachment": {
-			"type": "template",
-			"payload": {
-				"template_type": "button",
-				"text": strings.DEFAULT_TEXT,
-				"buttons": [
-				{
-					"type": "postback",
-					"title": "Joke",
-					"payload": "JOKE",
-				}]
-			}
-		}
-	};
-	callSendAPI(psid, response);
-};
 
 const buildQuickReply = title => {
 	return [{
