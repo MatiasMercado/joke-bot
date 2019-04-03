@@ -19,19 +19,22 @@ const handleMessage = (psid, received_message) => {
 
 	if (received_message.text) {
 		switch(received_message.text.toUpperCase()) {
-			case textCommands.RESET:
-				resetJokesCount(psid);
-				break;
-			case textCommands.HELP:
-				response = { "text": strings.HELP_TEXT };
-				callSendAPI(psid, response);
-			break;
 			case textCommands.JOKE:
-				sendRandomJoke(psid);
-				break;
+			sendRandomJoke(psid);
+			break;
+			case textCommands.RESET:
+			resetJokesCount(psid);
+			break;
+			case textCommands.HELP:
+			response = { 
+				"text": strings.HELP_TEXT, 
+				"quick_replies": buildQuickReply("Joke")
+			};
+			callSendAPI(psid, response);
+			break;
 			default:
-				sendJokesButton(psid);
-				break;
+			sendDefaultAnswer(psid);
+			break;
 		}
 	}
 }
@@ -39,8 +42,8 @@ const handleMessage = (psid, received_message) => {
 const handlePostback = (psid, received_postback) => {
 	const payload = received_postback.payload;
 
-	if (payload.toUpperCase() === 'JOKE') {
-		sendRandomJoke(psid);
+	if (payload.toUpperCase() === 'GET STARTED') {
+		sendDefaultAnswer(psid);
 	}
 }
 
@@ -77,15 +80,19 @@ const sendRandomJoke = psid => {
 	}
 
 	if (jokesCount >= MAX_JOKES) {
-		const response = {
-			"text": strings.LIMIT_REACHED_TEXT
+		const response = { 
+			"text": strings.LIMIT_REACHED_TEXT, 
+			"quick_replies": buildQuickReply("Joke") 
 		};
 		callSendAPI(psid, response);
 	} else {
 		request(process.env.ICNDB_API_URI + '/jokes/random?escape=javascript',
 			(err, res, body) => {  
 	    	// TODO: Handle error
-	    	const response = { "text": `${JSON.parse(body).value.joke}` };
+	    	const response = { 
+	    		"text": `${JSON.parse(body).value.joke}`, 
+	    		"quick_replies": buildQuickReply("Joke")
+	    	};
 
 			// Increase the jokes count for the sender
 			if (jokesCount + 1 == MAX_JOKES) {
@@ -102,21 +109,41 @@ const sendRandomJoke = psid => {
 }
 
 const resetJokesCount = psid => {
-	let response;
+	let text;
 	const userDetails = usersMap.get(psid);
 	
-	if (!userDetails || userDetails.jokesCount < MAX_JOKES 
-		|| !userDetails.timeOut) {
-		response = { "text": strings.LIMIT_NOT_REACHED_TEXT };
+	if (!usersMap.has(psid) || userDetails.jokesCount < MAX_JOKES || !userDetails.timeOut) {
+		text = strings.LIMIT_NOT_REACHED_TEXT;
 	} else {
 		clearTimeout(userDetails.timeOut);
 		usersMap.set(psid, { jokesCount: 0 });
-		response = { "text": strings.RESET_SUCCESS_TEXT };
+		text = strings.RESET_SUCCESS_TEXT;
+	}
+	const response = { 
+		"text": text, 
+		"quick_replies": buildQuickReply("Joke")
+	};
+	callSendAPI(psid, response);
+}
+
+const sendDefaultAnswer = psid => {
+	let response;
+	if (usersMap.has(psid) && usersMap.get(psid).jokesCount >= MAX_JOKES) {
+		response = { 
+			"text": strings.LIMIT_REACHED_TEXT, 
+			"quick_replies": buildQuickReply("Joke")
+		};
+	} else {
+		response = { 
+			"text": strings.DEFAULT_TEXT, 
+			"quick_replies": buildQuickReply("Joke")
+		};
+		
 	}
 	callSendAPI(psid, response);
 }
 
-const sendJokesButton = psid => {
+const sendPostbackButton = (psid, text, title) => {
 	const response = {
 		"attachment": {
 			"type": "template",
@@ -132,9 +159,16 @@ const sendJokesButton = psid => {
 			}
 		}
 	};
- 	callSendAPI(psid, response);
+	callSendAPI(psid, response);
 };
 
+const buildQuickReply = title => {
+	return [{
+		"content_type": "text",
+		"title": title,
+		"payload": title.toUpperCase()
+	}]
+}
 
 module.exports = {
 	handleMessage, 
