@@ -21,7 +21,7 @@ class WebhookService {
 		this.usersMap = new Map();
 	}
 
-	handleMessage(psid, received_message) {
+	async handleMessage(psid, received_message) {
 		if (received_message.text) {
 			switch(received_message.text.toUpperCase()) {
 				case textCommands.JOKE:
@@ -36,7 +36,7 @@ class WebhookService {
 		}
 	}
 
-	handlePostback(psid, received_postback) {
+	async handlePostback(psid, received_postback) {
 		const payload = received_postback.payload;
 		if (payload.toUpperCase() === 'START') {
 			return this.sendAPIService.sendMessageAndButton(psid, 
